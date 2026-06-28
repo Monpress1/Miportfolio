@@ -1,0 +1,768 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eli Monpress — Pocket Universe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #050505;
+            --text-main: #f8f9fa;
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --text-accent: #8a94a6;
+            
+            --glass-panel: rgba(255, 255, 255, 0.015);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            --blur-strength: blur(14px) saturate(140%);
+            
+            --glow-1: rgba(120, 100, 255, 0.15);
+            --glow-2: rgba(255, 80, 120, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 3D Rubber Balls Canvas */
+        .sphere-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1; 
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .sphere {
+            position: absolute;
+            border-radius: 50%;
+            will-change: transform;
+            /* CRITICAL: CSS transition removed so 60fps JS spring physics can run smooth */
+        }
+
+        #sphere1 {
+            width: 240px; 
+            height: 240px;
+            background: radial-gradient(circle at 35% 35%, rgba(130, 100, 255, 0.9), rgba(70, 50, 180, 0.9) 45%, rgba(20, 15, 50, 1) 85%);
+            box-shadow: inset -15px -15px 30px rgba(0,0,0,0.7), inset 10px 10px 25px rgba(255,255,255,0.3), 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        #sphere2 {
+            width: 180px; 
+            height: 180px;
+            background: radial-gradient(circle at 35% 35%, rgba(255, 100, 140, 0.9), rgba(180, 50, 80, 0.9) 45%, rgba(50, 15, 25, 1) 85%);
+            box-shadow: inset -15px -15px 30px rgba(0,0,0,0.7), inset 10px 10px 25px rgba(255,255,255,0.3), 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .liquid-bg {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            background: 
+                radial-gradient(circle at 85% 15%, var(--glow-1) 0%, transparent 55%),
+                radial-gradient(circle at 15% 75%, var(--glow-2) 0%, transparent 65%),
+                var(--bg-base);
+        }
+
+        /* App Frame */
+        .app-shell {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 415px;
+            height: 94vh;
+            max-height: 870px;
+            background: rgba(20, 20, 20, 0.15);
+            border-radius: 46px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px 24px 28px 24px;
+        }
+
+        /* PLANE 2: Master Glass Card with subtle Pink/Purple Bottom-Left Glow */
+        .master-glass-card {
+            position: absolute;
+            top: 90px;
+            left: 16px;
+            width: 70%;
+            height: 65%;
+            background: 
+                radial-gradient(circle at 12% 88%, rgba(255, 117, 140, 0.22) 0%, rgba(168, 85, 247, 0.14) 38%, transparent 70%),
+                var(--glass-panel);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            border: 1px solid var(--glass-border);
+            border-radius: 36px;
+            box-shadow: var(--glass-shadow), inset 0 1px 1px rgba(255,255,255,0.04);
+            z-index: 2;
+        }
+
+        /* PLANE 3: Upgraded Cinematic Robot Graphics */
+        .graphics-viewport {
+            position: absolute;
+            right: -18%;
+            bottom: 85px;
+            width: 330px;
+            height: 520px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .robot-asset {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center bottom;
+            opacity: 0;
+            /* Resting/Entering state: hidden slightly lower down in a blur */
+            transform: translateY(35px) scale(0.93);
+            filter: blur(12px) brightness(0.8);
+            transition: 
+                opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .robot-asset.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0px) brightness(1) drop-shadow(0 22px 32px rgba(0,0,0,0.55));
+        }
+
+        .robot-asset.exit {
+            opacity: 0;
+            /* Exiting state: floats up into the air while blurring out */
+            transform: translateY(-28px) scale(1.03);
+            filter: blur(10px) brightness(1.1);
+            transition: 
+                opacity 0.75s cubic-bezier(0.4, 0, 1, 1),
+                transform 0.85s cubic-bezier(0.4, 0, 1, 1),
+                filter 0.75s cubic-bezier(0.4, 0, 1, 1);
+        }
+
+        /* Navigation Header */
+        .app-header {
+            position: relative;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+        }
+
+        .brand-tag {
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+        .brand-tag span {
+            display: block;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--text-accent);
+            margin-top: 2px;
+        }
+
+        .nav-trigger {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4.5px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .nav-trigger:active { transform: scale(0.92); }
+        .nav-trigger:hover { background: rgba(255, 255, 255, 0.05); }
+        .nav-trigger .bar {
+            width: 16px;
+            height: 1.8px;
+            background: var(--text-main);
+            border-radius: 2px;
+        }
+
+        .ios-dropdown {
+            position: absolute;
+            top: 72px;
+            right: 20px;
+            width: 210px;
+            background: rgba(20, 20, 20, 0.4);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(-12px) scale(0.95);
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .ios-dropdown.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .ios-dropdown a {
+            padding: 12px 14px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 13.5px;
+            font-weight: 500;
+            border-radius: 16px;
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ios-dropdown a:hover, .ios-dropdown a:active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.06);
+            margin: 2px 8px;
+        }
+
+        /* PLANE 4: Typography Layer */
+        .ui-content-stack {
+            position: relative;
+            z-index: 4;
+            padding: 20px 8px 0 12px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(52px, 13vw, 68px);
+            font-weight: 700;
+            line-height: 0.94;
+            letter-spacing: -1.5px;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .dynamic-role {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2.5px;
+            color: var(--text-accent);
+            text-transform: uppercase;
+            line-height: 1.5;
+            max-width: 65%;
+            transition: opacity 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .lower-showcase {
+            margin-top: auto;
+            margin-bottom: 25px;
+            max-width: 70%;
+        }
+
+        .indicators {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+        .dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--text-main);
+            opacity: 0.2;
+            transition: all 0.3s ease;
+        }
+        .dot.active {
+            width: 18px;
+            border-radius: 4px;
+            opacity: 0.9;
+            box-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .info-heading {
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.25;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            transition: opacity 0.3s ease;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .info-desc {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            transition: opacity 0.3s ease;
+        }
+
+        /* Footer Action Pill */
+        .app-footer {
+            position: relative;
+            z-index: 50;
+        }
+
+        .action-pill {
+            width: 100%;
+            height: 56px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6px 0 24px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            touch-action: none; 
+            cursor: grab;
+        }
+        .action-pill:active { cursor: grabbing; }
+
+        .swipe-text {
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            width: 100%;
+            text-align: center;
+            padding-right: 20px;
+        }
+
+        .arrow-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--text-main);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+            position: absolute;
+            right: 6px;
+            z-index: 2;
+            will-change: transform;
+        }
+        
+        .arrow-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--bg-base);
+            stroke-width: 2.5;
+            fill: none;
+        }
+
+        .fade-out { opacity: 0 !important; }
+
+        @media (max-width: 480px) {
+            body { background: var(--bg-base); }
+            .app-shell {
+                max-width: 100vw;
+                height: 100vh;
+                max-height: none;
+                border: none;
+                border-radius: 0;
+                padding: 24px 20px 24px 20px;
+                background: transparent;
+                box-shadow: none;
+            }
+            .master-glass-card { width: 75%; height: 63%; top: 80px; }
+            .graphics-viewport { right: -22%; width: 310px; bottom: 75px; }
+            .lower-showcase { max-width: 75%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="liquid-bg"></div>
+    
+    <div class="sphere-container">
+        <div class="sphere" id="sphere1"></div>
+        <div class="sphere" id="sphere2"></div>
+    </div>
+
+    <main class="app-shell">
+        
+        <div class="master-glass-card"></div>
+
+        <header class="app-header">
+            <div class="brand-tag">
+                Mi.portfolio 
+                <span>v1.0.0</span>
+            </div>
+            <div class="nav-trigger" id="menuBtn">
+                <div class="bar"></div>
+                <div class="bar" style="width: 10px; margin-left: auto;"></div>
+            </div>
+        </header>
+
+        <div class="ios-dropdown" id="dropdown">
+            <a href="index.html">Home <span>→</span></a>
+            <div class="menu-divider"></div>
+            <a href="about.html">About Eli <span>→</span></a>
+            <div class="menu-divider"></div>
+            <a href="portfolio.html">Projects.db <span>→</span></a>
+            
+            <div class="menu-divider"></div>
+            <a href="elios.html">terminal view <span>→</span></a>
+            <div class="menu-divider"></div>
+            <a href="about">Contact <span>→</span></a>
+        </div>
+
+        <div class="graphics-viewport">
+            <img src="img1.png" class="robot-asset" id="slide-0" alt="Robotic asset">
+            <img src="img2.png" class="robot-asset" id="slide-1" alt="Robotic asset">
+            <img src="img3.png" class="robot-asset" id="slide-2" alt="Robotic asset">
+            <img src="img4.png" class="robot-asset" id="slide-3" alt="Robotic asset">
+            <img src="img5.png" class="robot-asset" id="slide-4" alt="Robotic asset">
+            <img src="img6.png" class="robot-asset" id="slide-5" alt="Robotic asset">
+        </div>
+        <br>
+        <div class="ui-content-stack">
+            <h1 class="hero-title">Eli<br>Monpress</h1>
+            <div class="dynamic-role" id="roleText">FRONTEND DEVELOPER & UI/UX ENTHUSIAST</div>
+
+            <div class="lower-showcase">
+                <div class="indicators" id="dotContainer">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+                <h2 class="info-heading" id="headText">Welcome to mine pocket universe.</h2>
+                <p class="info-desc" id="descText">I build immersive digital experiences that blend creativity with technology.</p>
+            </div>
+        </div>
+
+        <footer class="app-footer">
+            <div class="action-pill" id="swipeContainer">
+                <span class="swipe-text" id="swipeText">Slide to unlock portfolio</span>
+                <div class="arrow-icon" id="swipeArrow">
+                    <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- 1. SLIDER CONTENT & CINEMATIC TRANSITION LOGIC ---
+        const contentMatrix = [
+            { role: "FRONTEND DEVELOPER & UI/UX ENTHUSIAST", head: "Welcome to mine pocket universe.", desc: "I build immersive digital experiences that blend creativity with technology." },
+            { role: "SMART CONTRACT DEVELOPER", head: "Securing the decentralized layer.", desc: "Architecting high-performance, gas-optimized, and iron-clad immutable Web3 systems." },
+            { role: "BACKEND ARCHITECT", head: "Engineered for infinite scale.", desc: "Constructing modern low-latency microservices, structural pipelines, and clean APIs." },
+            { role: "FULL STACK ENGINEER", head: "Bridging logic and high fidelity.", desc: "Seamlessly combining aesthetic fluid animations with secure server computations." },
+            { role: "TON BLOCKCHAIN SPECIALIST", head: "Navigating Open Networks.", desc: "Integrating native decentralized jetton ecosystems and mini-apps cleanly inside Telegram." },
+            { role: "CREATIVE TECHNOLOGIST", head: "Manipulating interactive space.", desc: "Breathing life into custom responsive viewports with physics and complex fluid vectors." }
+        ];
+
+        let currentIdx = Math.floor(Math.random() * contentMatrix.length);
+        const roleEl = document.getElementById('roleText');
+        const headEl = document.getElementById('headText');
+        const descEl = document.getElementById('descText');
+        const dots = document.querySelectorAll('.dot');
+
+        function renderState(index) {
+            roleEl.classList.add('fade-out');
+            headEl.classList.add('fade-out');
+            descEl.classList.add('fade-out');
+
+            const oldImg = document.querySelector('.robot-asset.active');
+            if (oldImg) {
+                oldImg.classList.remove('active');
+                oldImg.classList.add('exit');
+                setTimeout(() => oldImg.classList.remove('exit'), 850);
+            }
+
+            setTimeout(() => {
+                roleEl.textContent = contentMatrix[index].role;
+                headEl.textContent = contentMatrix[index].head;
+                descEl.textContent = contentMatrix[index].desc;
+
+                roleEl.classList.remove('fade-out');
+                headEl.classList.remove('fade-out');
+                descEl.classList.remove('fade-out');
+            }, 320);
+
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+            
+            const nextImg = document.getElementById(`slide-${index}`);
+            if (nextImg) nextImg.classList.add('active');
+            
+            currentIdx = index;
+        }
+
+        // --- 2. DROPDOWN MENU LOGIC ---
+        const menuBtn = document.getElementById('menuBtn');
+        const dropdown = document.getElementById('dropdown');
+
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // --- 3. SWIPE-TO-LEFT LOGIC ---
+        const swipeContainer = document.getElementById('swipeContainer');
+        const swipeArrow = document.getElementById('swipeArrow');
+        const swipeText = document.getElementById('swipeText');
+        
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+        const maxDrag = swipeContainer.offsetWidth - 56; 
+
+        const handleDragStart = (e) => {
+            isDragging = true;
+            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            swipeArrow.style.transition = 'none';
+        };
+
+        const handleDragMove = (e) => {
+            if (!isDragging) return;
+            let x = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            let delta = x - startX;
+
+            if (delta > 0) delta = 0;
+            if (delta < -maxDrag) delta = -maxDrag;
+            
+            currentX = delta;
+            swipeArrow.style.transform = `translateX(${delta}px)`;
+            
+            const progress = Math.abs(delta) / maxDrag;
+            swipeText.style.opacity = 1 - (progress * 1.5);
+        };
+
+        const handleDragEnd = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            swipeArrow.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+            
+            if (currentX < -(maxDrag * 0.65)) {
+                swipeArrow.style.transform = `translateX(${-maxDrag}px)`;
+                setTimeout(() => {
+                    window.location.href = "about.html";
+                }, 200);
+            } else {
+                swipeArrow.style.transform = `translateX(0px)`;
+                swipeText.style.opacity = 1;
+            }
+            currentX = 0;
+        };
+
+        swipeContainer.addEventListener('mousedown', handleDragStart);
+        document.addEventListener('mousemove', handleDragMove);
+        document.addEventListener('mouseup', handleDragEnd);
+        
+        swipeContainer.addEventListener('touchstart', handleDragStart, {passive: false});
+        document.addEventListener('touchmove', handleDragMove, {passive: false});
+        document.addEventListener('touchend', handleDragEnd);
+
+        // --- 4. APP TIMING & NUDGE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderState(currentIdx);
+            
+            // CHANGED TO 10 SECONDS (10000ms)
+            setInterval(() => {
+                renderState((currentIdx + 1) % contentMatrix.length);
+            }, 10000);
+
+            setTimeout(() => {
+                if(!isDragging) {
+                    swipeArrow.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    swipeArrow.style.transform = 'translateX(-35px)';
+                    
+                    setTimeout(() => {
+                        if(!isDragging) {
+                            swipeArrow.style.transform = 'translateX(0px)';
+                            setTimeout(() => { swipeArrow.style.transition = 'none'; }, 600);
+                        }
+                    }, 500);
+                }
+            }, 2000);
+        });
+
+        // --- 5. SLOW, UNPREDICTABLE RUBBER BALL PHYSICS ---
+        const b1 = {
+            id: 1,
+            el: document.getElementById('sphere1'),
+            radius: 120, 
+            x: window.innerWidth - 160, 
+            y: 160,
+            vx: -0.35, // Drastically slowed
+            vy: 0.25,
+            mass: 1.6,
+            scale: 1,
+            scaleVel: 0
+        };
+        
+        const b2 = {
+            id: 2,
+            el: document.getElementById('sphere2'),
+            radius: 90, 
+            x: 130, 
+            y: window.innerHeight - 130,
+            vx: 0.4, 
+            vy: -0.3,
+            mass: 1.0,
+            scale: 1,
+            scaleVel: 0
+        };
+
+        function triggerRubberDeform(ball, intensity = 0.000005) {
+    // By setting scale to 1, we force the ball to stay its normal size.
+    // By setting scaleVel to 0, we kill any movement/bouncing.
+    ball.scale = 1; 
+    ball.scaleVel = 0; 
+}
+
+
+        function renderPhysics() {
+            const time = performance.now() * 0.0006;
+
+            [b1, b2].forEach((b) => {
+                // Apply subtle, unpredictable Perlin-esque organic steering
+                b.vx += Math.sin(time + b.id * 2.1) * 0.006;
+                b.vy += Math.cos(time * 0.8 + b.id * 1.7) * 0.006;
+
+                // Soft terminal velocity clamp to keep speed consistently "lazy"
+                const currentSpeed = Math.hypot(b.vx, b.vy);
+                const maxSpeed = 0.55; 
+                const minSpeed = 0.18; 
+
+                if (currentSpeed > maxSpeed) {
+                    b.vx = (b.vx / currentSpeed) * maxSpeed;
+                    b.vy = (b.vy / currentSpeed) * maxSpeed;
+                } else if (currentSpeed < minSpeed) {
+                    b.vx = (b.vx / currentSpeed) * minSpeed;
+                    b.vy = (b.vy / currentSpeed) * minSpeed;
+                }
+
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // Wall Collisions
+                if (b.x - b.radius <= 0) { b.x = b.radius; b.vx *= -1; triggerRubberDeform(b, 0.1); }
+                if (b.x + b.radius >= window.innerWidth) { b.x = window.innerWidth - b.radius; b.vx *= -1; triggerRubberDeform(b, 0.1); }
+                if (b.y - b.radius <= 0) { b.y = b.radius; b.vy *= -1; triggerRubberDeform(b, 0.1); }
+                if (b.y + b.radius >= window.innerHeight) { b.y = window.innerHeight - b.radius; b.vy *= -1; triggerRubberDeform(b, 0.1); }
+
+                // Hooke's Law Spring Simulation for rubber recovery
+                const springStiffness = 0.065;
+                const damping = 0.86;
+                const springForce = (1 - b.scale) * springStiffness;
+                b.scaleVel = (b.scaleVel + springForce) * damping;
+                b.scale += b.scaleVel;
+            });
+
+            // Ball-to-Ball Collision
+            const dx = b2.x - b1.x;
+            const dy = b2.y - b1.y;
+            const dist = Math.hypot(dx, dy);
+            const minDist = b1.radius + b2.radius;
+
+            if (dist < minDist) {
+                const nx = dx / dist;
+                const ny = dy / dist;
+                const overlap = minDist - dist;
+
+                b1.x -= nx * (overlap / 2);
+                b1.y -= ny * (overlap / 2);
+                b2.x += nx * (overlap / 2);
+                b2.y += ny * (overlap / 2);
+
+                const kx = b1.vx - b2.vx;
+                const ky = b1.vy - b2.vy;
+                const p = 2 * (nx * kx + ny * ky) / (b1.mass + b2.mass);
+
+                b1.vx -= p * b2.mass * nx;
+                b1.vy -= p * b2.mass * ny;
+                b2.vx += p * b1.mass * nx;
+                b2.vy += p * b1.mass * ny;
+
+                // Trigger bouncy rubber wobble on both spheres
+                triggerRubberDeform(b1, 0.18);
+                triggerRubberDeform(b2, 0.18);
+            }
+
+            // GPU Accelerated render
+            b1.el.style.transform = `translate3d(${b1.x - b1.radius}px, ${b1.y - b1.radius}px, 0) scale(${b1.scale})`;
+            b2.el.style.transform = `translate3d(${b2.x - b2.radius}px, ${b2.y - b2.radius}px, 0) scale(${b2.scale})`;
+
+            requestAnimationFrame(renderPhysics);
+        }
+
+        renderPhysics();
+        
+        window.addEventListener('resize', () => {
+            if (b1.x + b1.radius > window.innerWidth) b1.x = window.innerWidth - b1.radius;
+            if (b2.x + b2.radius > window.innerWidth) b2.x = window.innerWidth - b2.radius;
+            if (b1.y + b1.radius > window.innerHeight) b1.y = window.innerHeight - b1.radius;
+            if (b2.y + b2.radius > window.innerHeight) b2.y = window.innerHeight - b2.radius;
+        });
+    </script>
+</body>
+</html>

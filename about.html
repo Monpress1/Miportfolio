@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>About | Eli Monpress</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Integration -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Dark Mode (Default) - Enhanced Visibility */
+            --bg-base: #050505;
+            --text-main: #f8f9fa;
+            --text-muted: rgba(255, 255, 255, 0.65);
+            --text-accent: #8a94a6;
+            
+            --glass-panel: rgba(20, 20, 20, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            --blur-strength: blur(16px) saturate(140%);
+            
+            --pattern-dot: rgba(255, 255, 255, 0.06);
+            --heading-gradient: linear-gradient(135deg, #ff758c, #d946ef);
+            --particle-color: rgba(255, 255, 255, 0.9); /* Brighter Particles */
+            --icon-hover: #d946ef;
+        }
+
+        [data-theme="light"] {
+            /* Light Mode */
+            --bg-base: #f4f5f7;
+            --text-main: #0f172a;
+            --text-muted: rgba(15, 23, 42, 0.7);
+            --text-accent: #475569;
+            
+            --glass-panel: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            
+            --pattern-dot: rgba(0, 0, 0, 0.05);
+            --heading-gradient: linear-gradient(135deg, #d946ef, #9333ea);
+            --particle-color: rgba(0, 0, 0, 0.6);
+            --icon-hover: #9333ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- BACKGROUND PATTERN --- */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            background-image: radial-gradient(var(--pattern-dot) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        /* --- THEME TRANSITION OVERLAY (UNEVEN PAINT SPILL) --- */
+        .theme-overlay {
+            position: fixed;
+            top: 47px; /* Aligned with toggle button center */
+            right: calc(5% + 23px); /* Aligned with toggle button center */
+            width: 10px;
+            height: 10px;
+            z-index: 9998;
+            pointer-events: none;
+            /* Uneven wobbly blob */
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; 
+            transform: scale(0);
+            transform-origin: center center;
+            transition: transform 1s cubic-bezier(0.7, 0, 0.2, 1), border-radius 1s ease-in-out;
+        }
+        .theme-overlay.expand {
+            transform: scale(350); /* Scales massive enough to engulf screen */
+            /* Shifts the blob shape as it expands for an organic feel */
+            border-radius: 30% 70% 50% 50% / 50% 40% 60% 50%; 
+        }
+        .theme-overlay.no-transition {
+            transition: none !important;
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 24px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--glass-panel);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            transition: transform 0.2s;
+        }
+        .back-btn:active { transform: scale(0.95); }
+
+        .theme-toggle {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: var(--glass-panel);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 9999;
+            transition: transform 0.2s;
+        }
+        .theme-toggle:active { transform: scale(0.9); }
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-main);
+        }
+
+        /* --- HEADER & CONSTELLATION --- */
+        .hero-section {
+            position: relative;
+            width: 100%;
+            height: 55vh;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        #constellationCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .glass-title-card {
+            position: relative;
+            z-index: 2;
+            background: var(--glass-panel);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 40px 60px;
+            text-align: center;
+            box-shadow: var(--glass-shadow);
+            max-width: 90%;
+        }
+
+        .purple-pink-text {
+            background: var(--heading-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent; 
+        }
+
+        .glass-title-card h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(36px, 8vw, 56px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+
+        .glass-title-card p {
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-accent);
+        }
+
+        /* --- CONTENT WRAPPER --- */
+        .content-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px 100px 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .content-section {
+            margin-bottom: 40px;
+            background: var(--glass-panel);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .content-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .content-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 30px;
+            margin-bottom: 12px;
+        }
+
+        .content-section p {
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        /* --- INTEGRATED PORTFOLIO BUTTON --- */
+        .portfolio-action {
+            margin-top: 40px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .portfolio-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--heading-gradient);
+            color: #fff;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+            box-shadow: 0 10px 20px rgba(217, 70, 239, 0.25);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .portfolio-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(217, 70, 239, 0.45);
+        }
+
+        .portfolio-btn i {
+            transition: transform 0.3s;
+        }
+        
+        .portfolio-btn:hover i {
+            transform: translateX(4px);
+        }
+
+        /* --- FONT AWESOME ICON CLOUD --- */
+        .icon-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            margin-top: 30px;
+            justify-content: flex-start;
+        }
+
+        .icon-cloud i {
+            font-size: 42px;
+            color: var(--text-accent);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            filter: drop-shadow(0 0 0 rgba(0,0,0,0));
+        }
+
+        .icon-cloud i:hover {
+            color: var(--icon-hover);
+            transform: scale(1.25) rotate(-8deg);
+            filter: drop-shadow(0 10px 15px rgba(217, 70, 239, 0.4));
+        }
+
+        /* --- SINGLE LINE GLASS FOOTER --- */
+        .single-line-footer {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: max-content;
+            background: var(--glass-panel);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            padding: 12px 32px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            z-index: 100;
+            box-shadow: var(--glass-shadow);
+        }
+        .single-line-footer span {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        @media (max-width: 768px) {
+            .glass-title-card { padding: 30px 24px; }
+            .content-section { padding: 30px 24px; }
+            .icon-cloud { gap: 24px; justify-content: center; }
+            .icon-cloud i { font-size: 36px; }
+            .portfolio-action { justify-content: center; }
+            .single-line-footer { width: 90%; text-align: center; padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-pattern"></div>
+    <!-- Uneven Paint Drop Theme Overlay -->
+    <div class="theme-overlay" id="themeOverlay"></div>
+
+    <nav>
+        <a href="index.html" class="back-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+        </a>
+        <div class="theme-toggle" id="themeToggle" title="Toggle Light/Dark Mode">
+            <svg id="themeIcon" viewBox="0 0 24 24">
+                <!-- Moon icon default -->
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </div>
+    </nav>
+
+    <header class="hero-section">
+        <canvas id="constellationCanvas"></canvas>
+        <div class="glass-title-card">
+            <h1 class="purple-pink-text">Who is Monpress?</h1>
+            <p>Architect of Digital Dimensions</p>
+        </div>
+    </header>
+
+    <main class="content-container">
+        
+        <section class="content-section">
+            <h2 class="purple-pink-text">The Mind Behind the Code</h2>
+            <p>
+                
+                Hello world, 
+                <br>
+                I am Monpress a multifaceted software engineer, creative technologist, and digital architect. I specialize in forging seamless connections between complex backend infrastructures and ultra-fluid frontend interfaces.</p>
+            <p>Whether it's writing gas-optimized smart contracts, integrating secure fintech payment gateways, or deploying immersive Progressive Web Apps (PWAs) that bypass standard app store limitations, I build systems designed for infinite scale and flawless user experience.</p>
+
+            <h3 class="purple-pink-text">Core Philosophy</h3>
+            <p>Technology should feel like magic. By blending high-fidelity design with robust logic, I manipulate interactive space to breathe life into static viewports. From native blockchain integrations in Telegram to bespoke luxury branding web ecosystems, my goal is always to engineer trust, security, and beauty.</p>
+            
+            <!-- Button embedded directly into the flow of content -->
+            <div class="portfolio-action">
+                <a href="portfolio.html" class="portfolio-btn">
+                    Open Portfolio <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2 class="purple-pink-text">Under my specialities</h2>
+            <p>My stack is carefully curated to handle everything from blockchain nodes to pixel-perfect mobile animations.</p>
+            
+            <!-- Font Awesome Icon Scatter -->
+            <div class="icon-cloud">
+                <i class="fa-brands fa-python" title="Python"></i>
+                <i class="fa-brands fa-js" title="JavaScript"></i>
+                <i class="fa-brands fa-node-js" title="Node.js"></i>
+                <i class="fa-brands fa-react" title="React"></i>
+                <i class="fa-brands fa-php" title="PHP"></i>
+                <i class="fa-brands fa-html5" title="HTML5"></i>
+                <i class="fa-brands fa-css3-alt" title="CSS3"></i>
+                <i class="fa-brands fa-ethereum" title="Solidity / Web3"></i>
+                <i class="fa-brands fa-telegram" title="Telegram SDK"></i>
+                <i class="fa-brands fa-docker" title="Docker"></i>
+                <i class="fa-brands fa-git-alt" title="Git"></i>
+                <i class="fa-brands fa-aws" title="AWS"></i>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="single-line-footer">
+        Designed & Engineered by <span>Eli Monpress</span>
+    </footer>
+
+    <script>
+        // --- 1. THEME SWITCHER (UNEVEN PAINT ANIMATION) ---
+        const themeBtn = document.getElementById('themeToggle');
+        const overlay = document.getElementById('themeOverlay');
+        const themeIcon = document.getElementById('themeIcon');
+        let isDark = true;
+
+        const moonPath = "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z";
+        const sunPath = "M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z";
+
+        themeBtn.addEventListener('click', () => {
+            isDark = !isDark;
+            
+            // Set the overlay background to the TARGET theme's base color
+            overlay.style.backgroundColor = isDark ? '#050505' : '#f4f5f7';
+            
+            // Expand the uneven blob mask
+            overlay.classList.add('expand');
+            
+            // Wait for transition to finish (1s)
+            setTimeout(() => {
+                // Swap variables on body
+                if (isDark) {
+                    document.body.removeAttribute('data-theme');
+                    themeIcon.innerHTML = `<path d="${moonPath}"></path>`;
+                } else {
+                    document.body.setAttribute('data-theme', 'light');
+                    themeIcon.innerHTML = `<path d="${sunPath}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>`;
+                }
+                
+                // Immediately update background to catch the overlay disappearance
+                document.body.style.backgroundColor = isDark ? '#050505' : '#f4f5f7';
+                
+                // Instantly shrink overlay without user seeing it shrink
+                overlay.classList.add('no-transition');
+                overlay.classList.remove('expand');
+                
+                // Re-enable transition for the next click
+                setTimeout(() => {
+                    overlay.classList.remove('no-transition');
+                }, 50);
+                
+            }, 1000); 
+        });
+
+
+        // --- 2. INTERACTIVE CONSTELLATION CANVAS ---
+        const canvas = document.getElementById('constellationCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationFrameId;
+        
+        let mouse = { x: null, y: null, radius: 150 };
+
+        window.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+            initConstellation();
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.radius = Math.random() * 2 + 1;
+            }
+            
+            draw(color) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+
+            update() {
+                // Bounce off edges
+                if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+                
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Mouse interactivity (push particles away gently)
+                if (mouse.x != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.hypot(dx, dy);
+                    if (distance < mouse.radius) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const force = (mouse.radius - distance) / mouse.radius;
+                        this.x -= forceDirectionX * force * 1.5;
+                        this.y -= forceDirectionY * force * 1.5;
+                    }
+                }
+            }
+        }
+
+        function initConstellation() {
+            particles = [];
+            let numParticles = (canvas.width * canvas.height) / 10000; // Slightly higher density
+            if (numParticles > 120) numParticles = 120;
+            
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateConstellation() {
+            animationFrameId = requestAnimationFrame(animateConstellation);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Fetch current mode particle color
+            const computedStyle = getComputedStyle(document.body);
+            const particleColor = computedStyle.getPropertyValue('--particle-color').trim() || 'rgba(255,255,255,0.8)';
+            
+            // Set explicit rgb array for high-visibility lines
+            const isLight = document.body.hasAttribute('data-theme');
+            const rgb = isLight ? '0, 0, 0' : '255, 255, 255';
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw(particleColor);
+
+                for (let j = i; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let distance = Math.hypot(dx, dy);
+
+                    // Adjusted math for brighter, more visible constellation lines
+                    if (distance < 130) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(${rgb}, ${0.6 - distance/216})`; 
+                        ctx.lineWidth = 1.2;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animateConstellation();
+
+    </script>
+</body>
+</html>

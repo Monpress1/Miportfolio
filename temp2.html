@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELI MONPRESS // Developer & Architect</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syncopate:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* -------------------------------------
+   CORE VARIABLES & LIGHT MODE GLASS
+------------------------------------- */
+:root {
+    --bg-base: #f3f5f9;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --primary: #3b82f6;
+    --primary-glow: rgba(59, 130, 246, 0.25);
+    
+    /* Premium Light Frosted Glass Custom Properties */
+    --glass-bg: rgba(255, 255, 255, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 10px 40px -10px rgba(15, 23, 42, 0.06), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    
+    --font-display: 'Syncopate', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+}
+
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-base);
+    font-family: var(--font-body);
+    color: var(--text-main);
+    overflow: hidden; /* Lock viewport to prevent default vertical scroll */
+}
+
+/* -------------------------------------
+   AMBIENT MESH GLOW BACKGROUND (Image 2 Style)
+------------------------------------- */
+.ambient-bg {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -2; background: #f3f5f9; overflow: hidden;
+}
+.orb {
+    position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.65;
+}
+.orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: #c7d2fe; }
+.orb-2 { bottom: -10%; right: -5%; width: 70vw; height: 70vw; background: #ffedd5; }
+.orb-3 { top: 30%; right: 15%; width: 45vw; height: 45vw; background: #fbcfe8; }
+.orb-4 { bottom: 10%; left: 20%; width: 40vw; height: 40vw; background: #ccfbf1; }
+
+body::before {
+    content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, rgba(15, 23, 42, 0.02) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(15, 23, 42, 0.02) 1px, transparent 1px);
+    z-index: -1; pointer-events: none;
+}
+
+/* -------------------------------------
+   HORIZONTAL SWIPE SYSTEM CONTAINER
+------------------------------------- */
+.app-container {
+    display: flex;
+    width: 400vw; /* 4 Sections wide */
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+.app-container::-webkit-scrollbar { display: none; }
+
+section {
+    width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    overflow-y: auto; /* Allow internal card/content scroll if needed */
+    padding: 7rem 1.5rem 3rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* -------------------------------------
+   COMPONENTS & TYPOGRAPHY
+------------------------------------- */
+.centered-flex {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+}
+
+.section-title {
+    font-family: var(--font-display); font-size: 1.4rem; font-weight: 700;
+    margin-bottom: 0.5rem; color: var(--text-main); letter-spacing: -0.5px;
+}
+.section-subtitle {
+    font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary);
+    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2.5rem;
+}
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: 32px;
+    box-shadow: var(--glass-shadow);
+    padding: 2rem; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 100%;
+}
+
+.btn-primary {
+    background: #fff; color: var(--text-main);
+    border: 1px solid var(--glass-border); border-radius: 50px;
+    padding: 1rem 2.2rem; font-family: var(--font-body);
+    font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.3s;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.04), inset 0 1px 0 #fff;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); }
+
+/* -------------------------------------
+   NAVIGATION FLOATING BAR
+------------------------------------- */
+nav {
+    position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 3rem); max-width: 500px;
+    padding: 0.75rem 1.5rem; z-index: 1000;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: 50px;
+    box-shadow: var(--glass-shadow);
+}
+.logo { font-family: var(--font-display); font-weight: 700; font-size: 0.85rem; color: var(--text-main); text-decoration: none; }
+.nav-links { display: flex; gap: 1rem; }
+.nav-item {
+    font-family: var(--font-body); font-size: 0.8rem; font-weight: 600;
+    text-decoration: none; color: var(--text-muted); padding: 0.4rem 0.8rem;
+    border-radius: 20px; transition: 0.3s;
+}
+.nav-item.active { color: var(--primary); background: rgba(255, 255, 255, 0.6); box-shadow: inset 0 1px 0 #fff; }
+
+/* Swipe Indicator Prompt */
+.swipe-prompt {
+    position: absolute; bottom: 2rem; font-family: var(--font-mono);
+    font-size: 0.7rem; color: var(--text-muted); opacity: 0.7;
+    display: flex; align-items: center; gap: 8px; animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+
+/* -------------------------------------
+   PANEL 1: HOME PAGE (Stands Alone)
+------------------------------------- */
+.hero-wrapper { width: 100%; max-width: 450px; }
+.avatar-container {
+    width: 140px; height: 140px; margin: 0 auto 2rem; border-radius: 40px;
+    background: linear-gradient(135deg, #e0e7ff, #fbcfe8); padding: 5px;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.05);
+}
+.avatar-inner {
+    width: 100%; height: 100%; border-radius: 35px; background: #fff;
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
+
+.hero-title {
+    font-family: var(--font-display); font-size: 2.2rem; font-weight: 700;
+    line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 0.75rem; color: var(--text-main);
+}
+.hero-rotator { height: 24px; overflow: hidden; margin-bottom: 2.5rem; }
+.rotator-text {
+    font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);
+    opacity: 0; transform: translateY(15px); transition: 0.5s; display: none;
+}
+.rotator-text.active { display: block; opacity: 1; transform: translateY(0); }
+
+/* -------------------------------------
+   PANEL 2: METRICS PAGE (UI Widgets Layout)
+------------------------------------- */
+.metrics-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 1.5rem; }
+.metric-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.widget-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+.chart-container { position: relative; width: 100%; height: 150px; }
+
+/* Operational Mock UI elements matching Image 2 */
+.progress-value { font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; font-feature-settings: "tnum"; }
+.progress-bar-track { background: rgba(15, 23, 42, 0.05); height: 8px; border-radius: 10px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #6366f1); border-radius: 10px; width: 78%; }
+
+/* -------------------------------------
+   PANEL 3: WORK PAGE (Constructs Carousel)
+------------------------------------- */
+.work-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 1.2rem; }
+.project-card {
+    display: flex; gap: 1.2rem; align-items: center; padding: 1.2rem; text-align: left; text-decoration: none;
+}
+.project-img {
+    width: 85px; height: 85px; border-radius: 20px; object-fit: cover;
+    border: 1px solid rgba(255,255,255,0.5);
+}
+.project-meta { flex: 1; }
+.project-meta h3 { font-family: var(--font-body); font-weight: 700; font-size: 1rem; color: var(--text-main); margin-bottom: 0.25rem; }
+.project-meta p { font-family: var(--font-body); font-size: 0.8rem; color: var(--text-muted); }
+.project-arrow { color: var(--text-muted); font-size: 1.2rem; transition: transform 0.3s; }
+.project-card:hover .project-arrow { transform: translateX(4px); color: var(--primary); }
+
+/* -------------------------------------
+   PANEL 4: CONTACT PAGE
+------------------------------------- */
+.contact-container { width: 100%; max-width: 450px; }
+.form-group { width: 100%; margin-bottom: 1.2rem; text-align: left; }
+.form-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; margin-left: 0.5rem; margin-bottom: 0.4rem; display: block; }
+.input-field {
+    width: 100%; padding: 1rem 1.2rem; border-radius: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.08); background: rgba(255,255,255,0.5);
+    font-family: var(--font-body); font-size: 0.9rem; color: var(--text-main);
+    outline: none; transition: 0.3s;
+}
+.input-field:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-glow); }
+textarea.input-field { resize: none; min-height: 100px; }
+
+/* Desktop optimization to preserve mobile-first app configuration */
+@media (min-width: 768px) {
+    section { padding-top: 8rem; }
+    .hero-wrapper, .metrics-container, .work-container, .contact-container { max-width: 520px; }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+</div>
+
+<nav>
+    <a href="#" class="logo" onclick="jumpToPage(0); return false;">ELI.OS</a>
+    <div class="nav-links">
+        <a href="#" class="nav-item active" onclick="jumpToPage(0); return false;">Home</a>
+        <a href="#" class="nav-item" onclick="jumpToPage(1); return false;">Metrics</a>
+        <a href="#" class="nav-item" onclick="jumpToPage(2); return false;">Work</a>
+        <a href="#" class="nav-item" onclick="jumpToPage(3); return false;">Link</a>
+    </div>
+</nav>
+
+<div class="app-container" id="appAxis">
+
+    <section id="panel-home">
+        <div class="hero-wrapper centered-flex">
+            <div class="avatar-container">
+                <div class="avatar-inner">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=500&auto=format&fit=crop" alt="Eli Monpress Profile">
+                </div>
+            </div>
+            <h1 class="hero-title">ELI MONPRESS</h1>
+            <div class="hero-rotator">
+                <div class="rotator-text active">Architecting modern web interfaces</div>
+                <div class="rotator-text">Building high-fidelity applications</div>
+                <div class="rotator-text">Refining interaction design systems</div>
+            </div>
+            <a href="#" class="btn-primary" onclick="jumpToPage(1); return false;">
+                Get Started <span>→</span>
+            </a>
+            
+            <div class="swipe-prompt">
+                <span>Swipe left to enter</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="panel-metrics">
+        <h2 class="section-title">Performance</h2>
+        <p class="section-subtitle">Core Telemetry & Output Matrix</p>
+        
+        <div class="metrics-container">
+            <div class="glass-card">
+                <div class="widget-title">Daily Optimization Sequence</div>
+                <div class="progress-value">78%</div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 0.75rem; font-size: 0.7rem; color: var(--text-muted);">
+                    <span>System Run state: Nominal</span>
+                    <span style="font-family: var(--font-mono);">May 20, 2026</span>
+                </div>
+            </div>
+            
+            <div class="metric-row">
+                <div class="glass-card" style="padding: 1.2rem;">
+                    <div class="widget-title">Engine Vector</div>
+                    <div class="chart-container">
+                        <canvas id="skillsRadar"></canvas>
+                    </div>
+                </div>
+                <div class="glass-card" style="padding: 1.2rem;">
+                    <div class="widget-title">Output Curve</div>
+                    <div class="chart-container">
+                        <canvas id="outputLine"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="panel-work">
+        <h2 class="section-title">Constructs</h2>
+        <p class="section-subtitle">Selected Production Systems</p>
+        
+        <div class="work-container">
+            <a href="#" class="glass-card project-card" onclick="event.preventDefault();">
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=300&auto=format&fit=crop" class="project-img" alt="Belgom Network Workspace">
+                <div class="project-meta">
+                    <h3>Belgom Network</h3>
+                    <p>Fintech decentralization suite.</p>
+                </div>
+                <div class="project-arrow">→</div>
+            </a>
+            
+            <a href="#" class="glass-card project-card" onclick="event.preventDefault();">
+                <img src="https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=300&auto=format&fit=crop" class="project-img" alt="Zoe Platform Core">
+                <div class="project-meta">
+                    <h3>Zoe Multipurpose</h3>
+                    <p>Fluid operational system dashboard.</p>
+                </div>
+                <div class="project-arrow">→</div>
+            </a>
+            
+            <a href="#" class="glass-card project-card" onclick="event.preventDefault();">
+                <img src="https://images.unsplash.com/photo-1618004912476-29818d81ae2e?q=80&w=300&auto=format&fit=crop" class="project-img" alt="Mailtools Microservices UI">
+                <div class="project-meta">
+                    <h3>Mailtools Core</h3>
+                    <p>Advanced real-time communications engine.</p>
+                </div>
+                <div class="project-arrow">→</div>
+            </a>
+        </div>
+    </section>
+
+    <section id="panel-contact">
+        <h2 class="section-title">Secure Node</h2>
+        <p class="section-subtitle">Initialize Digital Communication</p>
+        
+        <div class="glass-card contact-container">
+            <form onsubmit="event.preventDefault(); alert('Transmission Successfully Delivered.');">
+                <div class="form-group">
+                    <label class="form-label">Identity Designation</label>
+                    <input type="text" class="input-field" placeholder="Your Name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Routing Endpoint Address</label>
+                    <input type="email" class="input-field" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payload Data Packet</label>
+                    <textarea class="input-field" placeholder="Write your message details..." required></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 0.5rem; background: var(--text-main); color: #fff;">
+                    Transmit Message Node
+                </button>
+            </form>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // --- APP AXIS HORIZONTAL SCROLL MANAGEMENT ---
+    const axis = document.getElementById('appAxis');
+    const navItems = document.querySelectorAll('.nav-item');
+
+    // Function to handle programmatic button/navbar jumps
+    function jumpToPage(index) {
+        const targetX = window.innerWidth * index;
+        axis.scrollTo({
+            left: targetX,
+            behavior: 'smooth'
+        });
+        updateActiveNav(index);
+    }
+
+    // Direct Navbar highlighting logic update function
+    function updateActiveNav(activeIndex) {
+        navItems.forEach((item, idx) => {
+            if(idx === activeIndex) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    // Continuous scroll listener to track user touch swipe positions precisely
+    let scrollTimeout;
+    axis.addEventListener('scroll', () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            const index = Math.round(axis.scrollLeft / window.innerWidth);
+            updateActiveNav(index);
+        }, 80);
+    });
+
+    // --- HOME HERO HEADLINE ROTATION MANAGEMENT ---
+    const rotators = document.querySelectorAll('.rotator-text');
+    let textIndex = 0;
+    setInterval(() => {
+        rotators[textIndex].classList.remove('active');
+        textIndex = (textIndex + 1) % rotators.length;
+        rotators[textIndex].classList.add('active');
+    }, 4000);
+
+    // --- PREMIUM LIGHT GLASS INTEGRATED CHARTS ---
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.font.family = "'Space Mono', monospace";
+    Chart.defaults.font.size = 9;
+
+    // Chart A: Skills Radar Configuration
+    new Chart(document.getElementById('skillsRadar'), {
+        type: 'radar',
+        data: {
+            labels: ['Dev', 'UI/UX', 'Arch', 'Web3', 'Ops'],
+            datasets: [{
+                data: [94, 90, 88, 76, 82],
+                backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                borderColor: '#3b82f6',
+                borderWidth: 1.5,
+                pointBackgroundColor: '#3b82f6',
+                pointRadius: 2
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                r: {
+                    grid: { color: 'rgba(15, 23, 42, 0.05)' },
+                    angleLines: { color: 'rgba(15, 23, 42, 0.05)' },
+                    pointLabels: { color: '#0f172a', font: { family: "'Plus Jakarta Sans', sans-serif", size: 9, weight: 600 } },
+                    ticks: { display: false }
+                }
+            }
+        }
+    });
+
+    // Chart B: Output Line Configuration
+    new Chart(document.getElementById('outputLine'), {
+        type: 'line',
+        data: {
+            labels: ['M', 'T', 'W', 'T', 'F'],
+            datasets: [{
+                data: [4, 8, 5, 12, 9],
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                borderWidth: 1.5,
+                pointBackgroundColor: '#6366f1',
+                pointRadius: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false } },
+                y: { grid: { color: 'rgba(15, 23, 42, 0.04)' }, beginAtZero: true, ticks: { display: false } }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

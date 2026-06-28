@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Works | Eli Monpress</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Dark Mode (Now the Default) */
+            --bg-base: #050505;
+            --text-main: #f8f9fa;
+            --text-muted: rgba(255, 255, 255, 0.65);
+            --text-accent: #8a94a6;
+            
+            --glass-panel: rgba(20, 20, 20, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            --blur-strength: blur(16px) saturate(140%);
+            
+            --pattern-dot: rgba(255, 255, 255, 0.06);
+            --heading-gradient: linear-gradient(135deg, #ff758c, #d946ef);
+            --card-fallback: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+
+        [data-theme="light"] {
+            /* Light Mode (Now the Toggleable Option) */
+            --bg-base: #f4f5f7;
+            --text-main: #0f172a;
+            --text-muted: rgba(15, 23, 42, 0.7);
+            --text-accent: #475569;
+            
+            --glass-panel: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            
+            --pattern-dot: rgba(0, 0, 0, 0.05);
+            --heading-gradient: linear-gradient(135deg, #d946ef, #9333ea);
+            --card-fallback: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            background-image: radial-gradient(var(--pattern-dot) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        /* --- THEME OVERLAY (PAINT SPILL) --- */
+        .theme-overlay {
+            position: fixed;
+            top: 47px; 
+            right: calc(5% + 23px); 
+            width: 10px;
+            height: 10px;
+            z-index: 9998;
+            pointer-events: none;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; 
+            transform: scale(0);
+            transform-origin: center center;
+            transition: transform 1s cubic-bezier(0.7, 0, 0.2, 1), border-radius 1s ease-in-out;
+        }
+        .theme-overlay.expand {
+            transform: scale(350); 
+            border-radius: 30% 70% 50% 50% / 50% 40% 60% 50%; 
+        }
+        .theme-overlay.no-transition { transition: none !important; }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 24px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--glass-panel);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            transition: transform 0.2s, background 0.3s;
+            cursor: pointer;
+        }
+        .back-btn:active { transform: scale(0.95); }
+
+        .theme-toggle {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: var(--glass-panel);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 9999;
+            transition: transform 0.2s;
+        }
+        .theme-toggle:active { transform: scale(0.9); }
+        .theme-toggle svg { width: 20px; height: 20px; fill: var(--text-main); stroke: var(--text-main); }
+
+        /* --- 3D CAROUSEL SECTION --- */
+        .portfolio-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding-top: 100px;
+            padding-bottom: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .carousel-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(28px, 6vw, 42px);
+            font-weight: 800;
+            margin-bottom: 40px;
+            background: var(--heading-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        .scene {
+            width: 260px;
+            height: 380px;
+            perspective: 1200px; 
+            margin-bottom: 60px;
+            touch-action: pan-y;
+        }
+
+        .carousel {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: grab;
+        }
+        .carousel:active { cursor: grabbing; }
+
+        .carousel__cell {
+            position: absolute;
+            width: 240px;
+            height: 360px;
+            left: 10px;
+            top: 10px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            
+            /* Zoomed out image logic (prevents head cropping) */
+            background-color: var(--glass-panel);
+            backdrop-filter: var(--blur-strength);
+            background-size: contain; /* Kept fully contained to never cut off heads */
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            transition: opacity 0.5s, transform 0.5s, box-shadow 0.3s;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            
+            /* Increased visibility for inactive cards */
+            opacity: 0.5; 
+        }
+
+        .carousel__cell.is-active {
+            opacity: 1;
+            box-shadow: 0 10px 40px rgba(217, 70, 239, 0.4);
+            border-color: rgba(217, 70, 239, 0.5);
+            background-color: var(--bg-base);
+        }
+
+        /* --- DYNAMIC INFO PANEL (BELOW CAROUSEL) --- */
+        .info-panel {
+            width: 90%;
+            max-width: 600px;
+            background: var(--glass-panel);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.3s, opacity 0.3s;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #projectTitle {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .project-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .stack-badge {
+            background: rgba(217, 70, 239, 0.1);
+            color: #d946ef;
+            border: 1px solid rgba(217, 70, 239, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .project-desc {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--heading-gradient);
+            color: #fff;
+            border: none;
+            box-shadow: 0 8px 16px rgba(217, 70, 239, 0.25);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(217, 70, 239, 0.4); }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+        .disabled-btn {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* --- FULL PAGE MODAL --- */
+        .project-modal {
+            position: fixed;
+            inset: 0;
+            background-color: var(--bg-base);
+            z-index: 20000;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .project-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            padding: 24px 5%;
+            background: var(--bg-base);
+            z-index: 100;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .modal-content {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 40px 5% 80px 5%;
+        }
+
+        .modal-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .modal-gallery img {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
+            border: 1px solid var(--glass-border);
+            object-fit: contain;
+            background: var(--glass-panel);
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(32px, 5vw, 48px);
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        @media (max-width: 600px) {
+            .scene { width: 220px; height: 330px; margin-bottom: 40px; }
+            .carousel__cell { width: 200px; height: 310px; }
+            .info-panel { padding: 24px; min-height: 320px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-pattern"></div>
+    <div class="theme-overlay" id="themeOverlay"></div>
+
+    <nav>
+        <a href="index.html" class="back-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+        </a>
+        <div class="theme-toggle" id="themeToggle" title="Toggle Light/Dark Mode">
+            <svg id="themeIcon" viewBox="0 0 24 24">
+                <!-- Starts with Sun Icon inside SVG for Dark Mode Default -->
+                <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+            </svg>
+        </div>
+    </nav>
+
+    <main class="portfolio-container">
+        <h1 class="carousel-title">RECENT PROJECTS</h1>
+        
+        <div class="scene">
+            <div class="carousel" id="carousel"></div>
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <h2 id="projectTitle">Project Title</h2>
+            <div id="projectStack" class="project-stack"></div>
+            <p id="projectDesc" class="project-desc">Project description goes here.</p>
+            <div class="action-buttons" id="actionButtons"></div>
+        </div>
+    </main>
+
+    <div class="project-modal" id="projectModal">
+        <div class="modal-nav">
+            <button class="back-btn" id="closeModalBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Back to Carousel
+            </button>
+        </div>
+        <div class="modal-content">
+            <div class="modal-gallery" id="modalGallery"></div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div class="project-stack" id="modalStack" style="justify-content: flex-start; margin-bottom: 24px;"></div>
+            <p class="project-desc" id="modalDesc" style="font-size: 18px; line-height: 1.8; margin-bottom: 40px;"></p>
+            <div class="action-buttons" id="modalActions" style="justify-content: flex-start;"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. THEME LOGIC (Dark Mode Default) ---
+        const themeBtn = document.getElementById('themeToggle');
+        const overlay = document.getElementById('themeOverlay');
+        const themeIcon = document.getElementById('themeIcon');
+        let isDark = true; // Kept True so Dark Mode runs first
+
+        const moonPath = "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z";
+        const sunPath = "M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z";
+
+        themeBtn.addEventListener('click', () => {
+            isDark = !isDark;
+            // Spill colors map to the incoming theme
+            overlay.style.backgroundColor = isDark ? '#050505' : '#f4f5f7';
+            overlay.classList.add('expand');
+            
+            setTimeout(() => {
+                if (isDark) {
+                    document.body.removeAttribute('data-theme');
+                    themeIcon.innerHTML = `<path d="${sunPath}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>`;
+                } else {
+                    document.body.setAttribute('data-theme', 'light');
+                    themeIcon.innerHTML = `<path d="${moonPath}" fill="currentColor" stroke="none"></path>`;
+                }
+                
+                document.body.style.backgroundColor = isDark ? '#050505' : '#f4f5f7';
+                overlay.classList.add('no-transition');
+                overlay.classList.remove('expand');
+                
+                setTimeout(() => overlay.classList.remove('no-transition'), 50);
+            }, 1000); 
+        });
+
+        // --- 2. PORTFOLIO DATA ---
+        const projects = [
+            {
+                title: "Flow",
+                images: ["flow.jpg", "flow2.jpg", "flow3.jpg"],
+                stack: ["WebSockets", "Node.js", "Payment Gateway"],
+                desc: "A real-time gaming platform that allows users to stake real money on their gaming abilities.",
+                link: "https://flow-pi-swart.vercel.app/download.html"
+            },
+            {
+                title: "Belgom",
+                images: ["Belgom.jpg", "belgom2.jpg"], 
+                stack: ["React Native", "Web3", "PlayStore"],
+                desc: "A robust custodial crypto wallet and exchange app. Facilitates instant, frictionless swaps and transactions for BTC, USDT, and ETH. Currently live on the Google Play Store.",
+                link: "https://belgom.ng"
+            },
+            {
+                title: "Transreal Properties",
+                images: ["Transreal.jpg"],
+                stack: ["HTML5", "JavaScript", "TypeScript", "SQL", "Node.js"],
+                desc: "A scalable real estate platform delivering seamless property listing, advanced search filtering, and secure user authentication for premium property management.",
+                link: "https://www.transrealproperties.com/"
+            },
+            {
+                title: "EKSUHub",
+                images: ["eksuhub3.jpg"," eksuhub2.jpg"], 
+                stack: ["React", "Node.js", "AI Integration"],
+                desc: "A comprehensive digital ecosystem designed for Ekiti State University. Features real-time chat, CBT mock practice exams, and an integrated AI assistant to navigate campus life.",
+                link: "https://eksuhub.vercel.app/"
+            },
+            {
+                title: "Campus Cupid",
+                images: ["campus.jpg"],
+                stack: ["PWA", "Next.js", "Capacitor"],
+                desc: "A cross-platform social networking hub built for Kenyan university students. Optimized as a Progressive Web App (PWA) for native-like performance on iOS, Android, and Windows.",
+                link: "https://campus-cupid-psi.vercel.app"
+            },
+            {
+                title: "Aquameme (Aquam)",
+                images: ["aquam.jpg"," aquam2.jpg" ],
+                stack: ["TON SDK", "Solidity", "DeFi"],
+                desc: "A decentralized token platform on the TON network. Incorporates custom token staking mechanics and tiered withdrawal logic, dynamically subtracting early unstaking penalties from expected interest.",
+                link: "https://aquameme.vercel.app/"
+            },
+            {
+                title: "Elor",
+                images: ["elor.jpg", "elor2.jpg"],
+                stack: ["React", "Tailwind", "Supabase"],
+                desc: "An ultra-premium e-commerce experience for high-end native menswear. Designed with a luxurious gold and black UI, featuring smooth cart animations and secure checkout flows.",
+                link: "https://elor.vercel.app"
+            },
+            {
+                title: "Trandy",
+                images: ["trandy.png"],
+                stack: ["PHP", "MySQL", "HTML/CSS"],
+                desc: "A powerful, multi-vendor e-commerce platform built with robust backend logic for intuitive product management, user tracking, and seamless inventory synchronization.",
+                link: null
+            }
+        ];
+
+        // --- 3. CAROUSEL & MODAL LOGIC ---
+        const carousel = document.getElementById('carousel');
+        const cellCount = projects.length;
+        let selectedIndex = 0;
+        let cellWidth;
+        let radius;
+        let theta;
+        let autoRotateInterval;
+        
+        let isDragging = false;
+        let startX = 0;
+
+        function initCarousel() {
+            cellWidth = carousel.offsetWidth;
+            theta = 360 / cellCount;
+            radius = Math.round((cellWidth / 2) / Math.tan(Math.PI / cellCount)) + 40; 
+
+            carousel.innerHTML = '';
+            projects.forEach((proj, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'carousel__cell';
+                if(i === 0) cell.classList.add('is-active');
+                
+                cell.style.backgroundImage = `url('${proj.images[0]}')`;
+                
+                let angle = theta * i;
+                cell.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+                
+                cell.addEventListener('click', () => {
+                    if (i === getNormalizedIndex(selectedIndex)) {
+                        openProjectModal(proj);
+                    } else {
+                        selectedIndex += getShortestPath(getNormalizedIndex(selectedIndex), i);
+                        rotateCarousel();
+                        resetAutoRotate();
+                    }
+                });
+
+                carousel.appendChild(cell);
+            });
+            
+            updateInfoPanel();
+            startAutoRotate();
+        }
+
+        function getShortestPath(current, target) {
+            let diff = target - current;
+            if (diff > cellCount / 2) diff -= cellCount;
+            if (diff < -cellCount / 2) diff += cellCount;
+            return diff;
+        }
+
+        function getNormalizedIndex(index) {
+            return (index % cellCount + cellCount) % cellCount;
+        }
+
+        function rotateCarousel() {
+            const angle = theta * selectedIndex * -1;
+            carousel.style.transform = `translateZ(${-radius}px) rotateY(${angle}deg)`;
+            
+            const cells = document.querySelectorAll('.carousel__cell');
+            cells.forEach(c => c.classList.remove('is-active'));
+            cells[getNormalizedIndex(selectedIndex)].classList.add('is-active');
+            
+            updateInfoPanel();
+        }
+
+        function updateInfoPanel() {
+            const activeProj = projects[getNormalizedIndex(selectedIndex)];
+            
+            document.getElementById('projectTitle').innerText = activeProj.title;
+            document.getElementById('projectDesc').innerText = activeProj.desc;
+            
+            const stackContainer = document.getElementById('projectStack');
+            stackContainer.innerHTML = activeProj.stack.map(tech => `<span class="stack-badge">${tech}</span>`).join('');
+            
+            const btnContainer = document.getElementById('actionButtons');
+            if (activeProj.link) {
+                btnContainer.innerHTML = `
+                    <button class="btn btn-primary" onclick="document.querySelector('.carousel__cell.is-active').click()">
+                        View Details <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                `;
+            } else {
+                btnContainer.innerHTML = `
+                    <button class="btn btn-secondary disabled-btn">
+                        Internal Project <i class="fa-solid fa-lock"></i>
+                    </button>
+                `;
+            }
+        }
+
+        // --- 4. MODAL FUNCTIONALITY ---
+        const projectModal = document.getElementById('projectModal');
+        
+        function openProjectModal(proj) {
+            stopAutoRotate();
+            
+            document.getElementById('modalTitle').innerText = proj.title;
+            document.getElementById('modalDesc').innerText = proj.desc;
+            document.getElementById('modalStack').innerHTML = proj.stack.map(tech => `<span class="stack-badge">${tech}</span>`).join('');
+            
+            document.getElementById('modalGallery').innerHTML = proj.images
+                .map(img => `<img src="${img}" alt="${proj.title} Screen">`)
+                .join('');
+            
+            const modalActions = document.getElementById('modalActions');
+            if (proj.link) {
+                modalActions.innerHTML = `
+                    <a href="${proj.link}" target="_blank" class="btn btn-primary">
+                        View Live Demo <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                `;
+            } else {
+                modalActions.innerHTML = `
+                    <button class="btn btn-secondary disabled-btn">
+                        Internal Project <i class="fa-solid fa-lock"></i>
+                    </button>
+                `;
+            }
+
+            projectModal.classList.add('active');
+        }
+
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            projectModal.classList.remove('active');
+            startAutoRotate();
+        });
+
+        // --- 5. DRAG / SWIPE LOGIC ---
+        function handleDragStart(e) {
+            isDragging = true;
+            startX = getPositionX(e);
+            stopAutoRotate();
+            carousel.style.transition = 'none';
+        }
+
+        function handleDragMove(e) {
+            if (!isDragging) return;
+            const currentPosition = getPositionX(e);
+            const deltaX = currentPosition - startX;
+            const angleOffset = (deltaX / window.innerWidth) * 180; 
+            const baseAngle = theta * selectedIndex * -1;
+            
+            carousel.style.transform = `translateZ(${-radius}px) rotateY(${baseAngle + angleOffset}deg)`;
+        }
+
+        function handleDragEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            const endX = getPositionX(e.type.includes('mouse') ? e : e.changedTouches[0]);
+            const deltaX = endX - startX;
+            
+            carousel.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            
+            if (deltaX < -50) {
+                selectedIndex++;
+            } else if (deltaX > 50) {
+                selectedIndex--;
+            }
+            
+            rotateCarousel();
+            startAutoRotate();
+        }
+
+        function getPositionX(e) {
+            if (!e) return 0;
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                return e.changedTouches[0].clientX;
+            }
+            return e.clientX || 0;
+        }
+
+        const scene = document.querySelector('.scene');
+        scene.addEventListener('touchstart', handleDragStart, {passive: true});
+        scene.addEventListener('touchmove', handleDragMove, {passive: true});
+        scene.addEventListener('touchend', handleDragEnd);
+        
+        scene.addEventListener('mousedown', handleDragStart);
+        window.addEventListener('mousemove', handleDragMove);
+        window.addEventListener('mouseup', handleDragEnd);
+        scene.addEventListener('mouseleave', () => { if(isDragging) handleDragEnd(event); });
+
+        // --- 6. AUTO ROTATION ---
+        function startAutoRotate() {
+            clearInterval(autoRotateInterval);
+            autoRotateInterval = setInterval(() => {
+                if (!projectModal.classList.contains('active')) {
+                    selectedIndex++;
+                    rotateCarousel();
+                }
+            }, 3000); 
+        }
+
+        function stopAutoRotate() {
+            clearInterval(autoRotateInterval);
+        }
+
+        function resetAutoRotate() {
+            stopAutoRotate();
+            startAutoRotate();
+        }
+
+        window.addEventListener('resize', initCarousel);
+        initCarousel();
+    </script>
+</body>
+</html>
