@@ -88,24 +88,25 @@
                 var(--bg-base);
         }
 
-        /* App Frame */
-        .app-shell {
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 415px;
-            height: 94vh;
-            max-height: 870px;
-            background: rgba(20, 20, 20, 0.15);
-            border-radius: 46px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0,0,0,0.3);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 30px 24px 28px 24px;
-        }
+      /* App Frame */
+.app-shell {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 415px;
+    height: 90dvh;          /* Changed from 94vh to 90dvh (Dynamic VH accounts for Chrome toolbars) */
+    max-height: 800px;     /* Reduced from 870px to 800px to cap the desktop height safely */
+    background: rgba(20, 20, 20, 0.15);
+    border-radius: 46px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0,0,0,0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 30px 24px 28px 24px;
+}
+
 
         /* PLANE 2: Master Glass Card with subtle Pink/Purple Bottom-Left Glow */
         .master-glass-card {
@@ -273,16 +274,17 @@
             margin: 2px 8px;
         }
 
-        /* PLANE 4: Typography Layer */
-        .ui-content-stack {
-            position: relative;
-            z-index: 4;
-            padding: 20px 8px 0 12px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            pointer-events: none;
-        }
+       /* PLANE 4: Typography Layer */
+.ui-content-stack {
+    position: relative;
+    z-index: 4;
+    padding: 20px 8px 0 12px;
+    flex: 1;               /* Changed from height: 100% to fill space dynamically */
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+}
+
 
         .hero-title {
             font-family: 'Playfair Display', serif;
@@ -766,3 +768,4 @@
     </script>
 </body>
 </html>
+
